@@ -26,10 +26,12 @@ st.title("Misty II Camera Feed")
 # Create a placeholder to update the image
 image_placeholder = st.empty()
 
+# Automatic refresh every 1 second
+st.autorefresh(interval=1000)  # Refresh every 1000ms (1 second)
+
 # Fetch and display images continuously
 while True:
     image = fetch_camera_image()
     if image:
         image_placeholder.image(image, caption="Misty II Camera Feed", use_column_width=True)
     time.sleep(1)  # Wait for 1 second before fetching the next image
-    st.experimental_rerun()  # Refresh the Streamlit app to update the image
