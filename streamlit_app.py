@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import cv2
 import numpy as np
+import io
 
 # Function to check if Misty II is connected
 def check_connection(ip):
@@ -11,28 +12,32 @@ def check_connection(ip):
         if response.status_code == 200:
             return True
         else:
-            st.error("Failed to connect to Misty II")
+            st.error(f"Failed to connect to Misty II: Status Code {response.status_code}")
             return False
-    except requests.exceptions.RequestException:
-        st.error("Error connecting to Misty II")
+    except requests.exceptions.RequestException as e:
+        st.error(f"Error connecting to Misty II: {e}")
         return False
 
 # Function to get the camera feed from Misty II
 def get_misty_camera_feed(ip):
-    # Assuming the API provides the camera feed endpoint
-    camera_url = f"http://{ip}/api/v2/camera/current"  # This URL may change depending on Misty's API
-    while True:
-        # Fetch image from the camera
-        response = requests.get(camera_url)
+    camera_url = f"http://{ip}/api/v2/camera/current"  # Check if this is the correct endpoint for a snapshot
+    try:
+        response = requests.get(camera_url, timeout=5)
         if response.status_code == 200:
-            # Convert to OpenCV format (BGR)
-            nparr = np.frombuffer(response.content, np.uint8)
-            img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            # Convert byte content to image format
+            image_data = np.frombuffer(response.content, np.uint8)
+            img = cv2.imdecode(image_data, cv2.IMREAD_COLOR)
             if img is not None:
                 return img
+            else:
+                st.error("Failed to decode image")
+                return None
         else:
-            st.error("Error fetching camera feed")
-            break
+            st.error(f"Failed to fetch camera feed, status code: {response.status_code}")
+            return None
+    except requests.exceptions.RequestException as e:
+        st.error(f"Error fetching camera feed: {e}")
+        return None
 
 # Streamlit UI to input IP address
 st.title("Misty II Camera Feed")
