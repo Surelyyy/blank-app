@@ -2,8 +2,7 @@ import streamlit as st
 import requests
 from PIL import Image
 from io import BytesIO
-import time
-ngrok http 8501
+
 
 # Misty II camera URL
 CAMERA_URL = "http://192.168.0.149/api/cameras/rgb"
