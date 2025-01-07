@@ -14,7 +14,7 @@ def fetch_camera_image():
         if response.status_code == 200:
             return Image.open(BytesIO(response.content))
         else:
-            st.error("Error fetching camera image: HTTP {}".format(response.status_code))
+            st.error(f"Error fetching camera image: HTTP {response.status_code}")
             return None
     except requests.exceptions.RequestException as e:
         st.error(f"Error connecting to Misty: {e}")
@@ -26,10 +26,7 @@ st.title("Misty II Camera Feed")
 # Create a placeholder to update the image
 image_placeholder = st.empty()
 
-# Automatic refresh every 1 second
-st.autorefresh(interval=1000)  # Refresh every 1000ms (1 second)
-
-# Fetch and display images continuously
+# Continuously update the image every 1 second
 while True:
     image = fetch_camera_image()
     if image:
