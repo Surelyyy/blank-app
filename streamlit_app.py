@@ -1,6 +1,4 @@
 import pytesseract
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-
 import websocket
 import json
 import threading
@@ -41,7 +39,7 @@ current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
 file_name = f"NumberImage.jpg"
 
 # Load the TFLite model
-interpreter = tf.lite.Interpreter(model_path=r"C:\Users\rifqi\Downloads\Workshop 2\converted_tflite\model_unquant.tflite")
+interpreter = tf.lite.Interpreter(model_path=r"model_unquant.tflite")
 interpreter.allocate_tensors()
 
 # Get input and output tensors
@@ -69,31 +67,40 @@ def recognize_emotion(image):
     return emotion_labels[emotion_index]
 
 def capture_and_process_image():
-    # Existing code to capture image from Misty
+    # Capture image from Misty directly into memory
     take_picture_url = f'http://{misty_ip}/api/cameras/rgb'
     take_picture_params = {
-        "Base64": "false",
-        "FileName": "captured_image.jpg",
+        "Base64": "true",  # Request the image in Base64 format
         "Width": 2048,
         "Height": 1536,
         "DisplayOnScreen": "false",
         "OverwriteExisting": "true"
     }
     response = requests.get(take_picture_url, params=take_picture_params)
+    
     if response.status_code == 200:
-        with open("captured_image.jpg", "wb") as f:
-            f.write(response.content)
         print("Image captured successfully.")
         
-        # Load the captured image for emotion recognition
-        image = cv2.imread("captured_image.jpg")
-        
-        # Recognize emotion
-        detected_emotion = recognize_emotion(image)
-        print(f"Detected emotion: {detected_emotion}")
-
-        # React to the detected emotion
-        react_to_emotion(detected_emotion)
+        # Extract the Base64-encoded image data from the response
+        result = response.json()
+        if "result" in result and "imageData" in result["result"]:
+            image_data = result["result"]["imageData"]
+            
+            # Decode the Base64 image data
+            img_bytes = base64.b64decode(image_data)
+            
+            # Convert bytes to a numpy array (image)
+            image_array = np.frombuffer(img_bytes, dtype=np.uint8)
+            image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+            
+            # Process the image (Emotion recognition)
+            detected_emotion = recognize_emotion(image)
+            print(f"Detected emotion: {detected_emotion}")
+            
+            # React to the detected emotion
+            react_to_emotion(detected_emotion)
+        else:
+            print("Failed to retrieve image data from Misty response.")
     else:
         print("Failed to capture image:", response.text)
 
@@ -151,7 +158,7 @@ def preprocess_image(image_path):
     return img
 
 # Specify the root folder containing the subfolders
-root_folder = r"C:\Users\rifqi\Downloads\Workshop 2\number_dataset"  # <--- Update path here
+root_folder = r"number_dataset"  # <--- Update path here
 
 # Output folder for processed images
 processed_output_folder = "processed_images"
