@@ -1,5 +1,2 @@
 streamlit
-pytesseract
-websocket
-tensorflow
-opencv-python-headless
+streamlit requests opencv-python
