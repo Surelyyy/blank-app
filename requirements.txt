@@ -2,6 +2,4 @@ streamlit
 pytesseract
 websocket
 tensorflow
-cv2
-numpy
-os
+opencv
