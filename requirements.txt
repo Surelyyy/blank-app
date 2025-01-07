@@ -2,4 +2,4 @@ streamlit
 pytesseract
 websocket
 tensorflow
-opencv-python
+opencv-python-headless
