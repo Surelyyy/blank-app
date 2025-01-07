@@ -14,7 +14,7 @@ import base64
 import logging
 import random
 import tensorflow as tf
-from openCV import cv2 
+from opencv import cv2 
 import numpy as np
 
 import os
